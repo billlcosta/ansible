@@ -1,0 +1,52 @@
+---
+
+- name: SISOP | Install epel-repository
+  yum: name=epel-release state=latest
+
+- name: SISOP | Update System
+  yum: name=* state=latest update_cache=yes
+
+- name: SISOP | Install required packages
+  yum: name={{ packages }} state=latest
+
+- name: HAPROXY | Downloading and uncompress
+  unarchive: src=https://www.haproxy.org/download/1.8/src/haproxy-{{ version }}.tar.gz dest=/usr/src remote_src=yes
+
+- name: HAPROXY | Make
+  shell: make TARGET=generic ARCH=native CPU={{ cpu }} -j{{ make_cpu }}
+  args:
+    chdir: /usr/src/haproxy-{{ version }}
+
+- name: HAPROXY | Make install
+  make: chdir=/usr/src/haproxy-{{ version }} target=install
+
+- name: HAPROXY | Copy Systemd File
+  copy: 
+    src: /usr/src/haproxy-{{ version }}/examples/haproxy.init
+    dest: /etc/init.d/haproxy
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=r
+    remote_src: yes
+
+- name: HAPROXY | Add group haproxy
+  user: name=haproxy state=present
+
+- name: HAPROXY | Add system user haproxy
+  user: name=haproxy comment="haproxy user" group=haproxy system=True
+
+- name: HAPROXY | Creating directory
+  file: path={{item}} state=directory mode=775 owner=root group=root
+  with_items:
+    - /etc/haproxy
+    - /run/haproxy
+    - /var/lib/haproxy
+
+- name: HAPROXY | Create symbolic link
+  file: src=/usr/local/sbin/haproxy dest=/usr/sbin/haproxy state=link force=yes
+
+- name: HAPROXY | Copy haproxy.conf template
+  template: src=haproxy.cfg dest=/etc/haproxy/haproxy.cfg force=yes owner=root group=root mode=0755
+  notify: Restart haproxy
+
+...

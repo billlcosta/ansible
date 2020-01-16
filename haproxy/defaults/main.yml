@@ -1,0 +1,29 @@
+---
+
+#--- Packages
+packages:
+  - "@Development tools"
+  - gcc
+  - wget
+  - pcre-static
+  - pcre-devel
+
+#--- Configure/install
+version: 1.8.20
+cpu: x86_64
+make_cpu: 2
+
+#--- Haproxy File
+frontend_name_cluster: mysql_cluster
+backend_name_cluster: mysql_cluster
+cluster_name: mysql
+cluster_port: 3306
+balance_type: roundrobin
+hostname_server01: mysql001
+hostname_server02: mysql002
+hostname_server03: mysql003
+ip_server01: 192.168.1.1
+ip_server_02: 192.168.1.2
+ip_server03: 192.168.1.3
+
+...

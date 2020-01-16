@@ -1,0 +1,4 @@
+- name: Restart haproxy
+  systemd: state=restarted enabled=yes daemon_reload=yes name=haproxy
+
+# vim:ft=ansible :
